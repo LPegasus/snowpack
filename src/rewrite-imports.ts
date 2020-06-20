@@ -1,3 +1,5 @@
+import { HTML_JS_REGEX } from "./util";
+
 const {parse} = require('es-module-lexer');
 
 function spliceString(source: string, withSlice: string, start: number, end: number) {
@@ -40,4 +42,36 @@ export async function transformEsmImports(
     rewrittenCode = spliceString(rewrittenCode, rewrittenImport, imp.s, imp.e);
   }
   return rewrittenCode;
+}
+
+async function transformHtmlImports(code: string, replaceImport: (specifier: string) => string) {
+  let rewrittenCode = code;
+  let match;
+  const importRegex = new RegExp(HTML_JS_REGEX);
+  while ((match = importRegex.exec(rewrittenCode))) {
+    const [, scriptTagMatch, jsCodeMatch] = match;
+    rewrittenCode = spliceString(
+      rewrittenCode,
+      await transformEsmImports(jsCodeMatch, replaceImport),
+      match.index + scriptTagMatch.length,
+      match.index + scriptTagMatch.length + jsCodeMatch.length,
+    );
+  }
+  return rewrittenCode;
+}
+
+export async function transformFileImports(
+  code: string,
+  fileName: string,
+  replaceImport: (specifier: string) => string,
+) {
+  if (fileName.endsWith('.js')) {
+    return transformEsmImports(code, replaceImport);
+  }
+  if (fileName.endsWith('.html')) {
+    return transformHtmlImports(code, replaceImport);
+  }
+  throw new Error(
+    `Incompatible file: Cannot ESM imports for file "${fileName}". This is most likely an error within Snowpack.`,
+  );
 }

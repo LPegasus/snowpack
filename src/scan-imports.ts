@@ -7,7 +7,7 @@ import nodePath from 'path';
 import stripComments from 'strip-comments';
 import validatePackageName from 'validate-npm-package-name';
 import {SnowpackConfig} from './config';
-import {isTruthy, findMatchingMountScript} from './util';
+import {isTruthy, findMatchingMountScript, HTML_JS_REGEX} from './util';
 
 const WEB_MODULES_TOKEN = 'web_modules/';
 const WEB_MODULES_TOKEN_LENGTH = WEB_MODULES_TOKEN.length;
@@ -21,7 +21,6 @@ const ESM_DYNAMIC_IMPORT_REGEX = /import\((?:['"].+['"]|`[^$]+`)\)/gm;
 const HAS_NAMED_IMPORTS_REGEX = /^[\w\s\,]*\{(.*)\}/s;
 const SPLIT_NAMED_IMPORTS_REGEX = /\bas\s+\w+|,/s;
 const DEFAULT_IMPORT_REGEX = /import\s+(\w)+(,\s\{[\w\s]*\})?\s+from/s;
-const HTML_JS_REGEX = /<script.*?>(.*)<\/script>/gms;
 
 /**
  * An install target represents information about a dependency to install.
